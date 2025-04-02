@@ -21,10 +21,12 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
-        // Disable the static render of the header on web
-        // to prevent a hydration error in React Navigation v6.
+        tabBarActiveTintColor: Colors.dark.background,
+        tabBarInactiveTintColor: "gainsboro",
         headerShown: useClientOnlyValue(false, true),
+        tabBarStyle: {
+          backgroundColor: Colors.light.background,
+        },
       }}
     >
       <Tabs.Screen
@@ -41,20 +43,6 @@ export default function TabLayout() {
           headerShown: false,
           tabBarIcon: ({ color }) => (
             <TabBarIcon name="cutlery" color={color} />
-          ),
-          headerRight: () => (
-            <Link href="/modal" asChild>
-              <Pressable>
-                {({ pressed }) => (
-                  <FontAwesome
-                    name="info-circle"
-                    size={20}
-                    color={Colors[colorScheme ?? "light"].text}
-                    style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
-                  />
-                )}
-              </Pressable>
-            </Link>
           ),
         }}
       />
