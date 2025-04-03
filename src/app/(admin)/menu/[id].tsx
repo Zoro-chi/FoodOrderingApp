@@ -8,8 +8,6 @@ import Button from "@/components/Button";
 import { useCart } from "@/providers/CartProvider";
 import { PizzaSize } from "@/types";
 
-const sizes: PizzaSize[] = ["S", "M", "L", "XL"];
-
 const ProductDetailsScreen = () => {
   const { id } = useLocalSearchParams();
   const router = useRouter();
@@ -48,32 +46,8 @@ const ProductDetailsScreen = () => {
         style={styles.image}
       />
 
-      <Text> Select your size: </Text>
-      <View style={styles.sizes}>
-        {sizes.map((size) => (
-          <Pressable
-            key={size}
-            style={[
-              styles.size,
-              { backgroundColor: size === selectedSize ? "gainsboro" : "#000" },
-            ]}
-            onPress={() => setSelectedSize(size)}
-          >
-            <Text
-              style={[
-                styles.sizeText,
-                { color: size === selectedSize ? "white" : "gray" },
-              ]}
-            >
-              {size}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
-
+      <Text style={styles.title}> {product.name} </Text>
       <Text style={styles.price}> ${product.price} </Text>
-
-      <Button onPress={addToCart} text="Add to cart" />
     </View>
   );
 };
@@ -96,25 +70,10 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
-    marginTop: "auto",
   },
-  sizes: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginVertical: 10,
-  },
-  size: {
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "gainsboro",
-    padding: 10,
-    width: 50,
-    aspectRatio: 1,
-    borderRadius: 25,
-  },
-  sizeText: {
-    fontSize: 20,
-    fontWeight: "500",
+  title: {
     color: "#fff",
+    fontSize: 22,
+    fontWeight: "bold",
   },
 });
