@@ -1,12 +1,14 @@
 import { useState } from "react";
+import { FontAwesome } from "@expo/vector-icons";
 import { StyleSheet, Text, View, Image, Pressable } from "react-native";
-import { useLocalSearchParams, Stack, useRouter } from "expo-router";
+import { useLocalSearchParams, Stack, useRouter, Link } from "expo-router";
 
 import products from "@assets/data/products";
 import { defaultPizzaImage } from "@/components/ProductListItem";
 import Button from "@/components/Button";
 import { useCart } from "@/providers/CartProvider";
 import { PizzaSize } from "@/types";
+import Colors from "@/constants/Colors";
 
 const ProductDetailsScreen = () => {
   const { id } = useLocalSearchParams();
@@ -38,6 +40,20 @@ const ProductDetailsScreen = () => {
       <Stack.Screen
         options={{
           title: product.name,
+          headerRight: () => (
+            <Link href={`/(admin)/menu/create?id=${id}`} asChild>
+              <Pressable>
+                {({ pressed }) => (
+                  <FontAwesome
+                    name="pencil"
+                    size={20}
+                    color={Colors.dark.tint}
+                    style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
+                  />
+                )}
+              </Pressable>
+            </Link>
+          ),
         }}
       />
 

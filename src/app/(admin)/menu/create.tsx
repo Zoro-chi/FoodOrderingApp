@@ -1,12 +1,20 @@
 import { useState } from "react";
-import { StyleSheet, Text, View, TextInput } from "react-native";
+import { Stack, useLocalSearchParams } from "expo-router";
+import { StyleSheet, Text, View, TextInput, Image, Alert } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 
 import Button from "@/components/Button";
+import { defaultPizzaImage } from "@/components/ProductListItem";
+import Colors from "@/constants/Colors";
 
 const CreateProductScreen = () => {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [errors, setErrors] = useState<string[]>([]);
+  const [image, setImage] = useState<string | null>(null);
+
+  const { id } = useLocalSearchParams();
+  const isUpdating = !!id;
 
   const resetFields = () => {
     setName("");
@@ -29,6 +37,23 @@ const CreateProductScreen = () => {
     return errors.length === 0;
   };
 
+  const onSubmit = () => {
+    if (isUpdating) {
+      onUpdate();
+    } else {
+      onCreate();
+    }
+  };
+
+  const onUpdate = () => {
+    if (!validateInput()) {
+      console.log("Validation errors:", errors);
+      return;
+    }
+    console.log("Product updated", name, price);
+    resetFields();
+  };
+
   const onCreate = () => {
     if (!validateInput()) {
       console.log("Validation errors:", errors);
@@ -38,8 +63,53 @@ const CreateProductScreen = () => {
     resetFields();
   };
 
+  const onDelete = () => {
+    console.log("Product deleted");
+    resetFields();
+  };
+
+  const confirmDelete = () => {
+    Alert.alert("Confirm", "Are you sure you want to delete this product?", [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Delete",
+        onPress: onDelete,
+        style: "destructive",
+      },
+    ]);
+  };
+
+  const pickImage = async () => {
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+    }
+  };
+
   return (
     <View style={styles.container}>
+      <Stack.Screen
+        options={{ title: isUpdating ? "Update Product" : "Create Product" }}
+      />
+
+      <Image
+        source={{ uri: image || defaultPizzaImage }}
+        style={styles.image}
+      />
+      <Text style={styles.textButton} onPress={pickImage}>
+        Select Image
+      </Text>
+
       <Text style={styles.label}>Name</Text>
       <TextInput
         value={name}
@@ -70,7 +140,12 @@ const CreateProductScreen = () => {
         </View>
       )}
 
-      <Button text="Create Product" onPress={onCreate} />
+      <Button text={isUpdating ? "Update" : "Create"} onPress={onSubmit} />
+      {isUpdating && (
+        <Text onPress={confirmDelete} style={styles.textButton}>
+          Delete
+        </Text>
+      )}
     </View>
   );
 };
@@ -96,5 +171,16 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginTop: 5,
     marginBottom: 20,
+  },
+  image: {
+    width: "50%",
+    aspectRatio: 1,
+    alignSelf: "center",
+  },
+  textButton: {
+    alignSelf: "center",
+    fontWeight: "bold",
+    color: Colors.dark.tint,
+    marginVertical: 10,
   },
 });
