@@ -31,7 +31,7 @@ FoodOrderingApp is a React Native application for ordering food, built with Expo
 1. Clone the repository:
 
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/Zoro-chi/FoodOrderingApp.git
    cd FoodOrderingApp
    ```
 
