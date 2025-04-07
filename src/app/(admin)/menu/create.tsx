@@ -1,20 +1,42 @@
-import { useState } from "react";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { StyleSheet, Text, View, TextInput, Image, Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 
 import Button from "@/components/Button";
 import { defaultPizzaImage } from "@/components/ProductListItem";
 import Colors from "@/constants/Colors";
+import {
+  useDeleteProduct,
+  useInsertProduct,
+  useProduct,
+  useUpdateProduct,
+} from "@/api/products";
 
 const CreateProductScreen = () => {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [errors, setErrors] = useState<string[]>([]);
   const [image, setImage] = useState<string | null>(null);
+  const router = useRouter();
 
-  const { id } = useLocalSearchParams();
+  const { id: idString } = useLocalSearchParams();
+  const id = parseFloat(typeof idString === "string" ? idString : idString[0]);
+
   const isUpdating = !!id;
+
+  const { insertProduct } = useInsertProduct();
+  const { updateProduct } = useUpdateProduct();
+  const { deleteProduct } = useDeleteProduct();
+  const { product: updatingProduct } = useProduct(id);
+
+  useEffect(() => {
+    if (updatingProduct) {
+      setName(updatingProduct.name);
+      setPrice(updatingProduct.price.toString());
+      setImage(updatingProduct.image);
+    }
+  }, [updatingProduct]);
 
   const resetFields = () => {
     setName("");
@@ -50,8 +72,26 @@ const CreateProductScreen = () => {
       console.log("Validation errors:", errors);
       return;
     }
-    console.log("Product updated", name, price);
-    resetFields();
+
+    updateProduct(
+      {
+        id,
+        name,
+        price: parseFloat(price),
+        image,
+      },
+      {
+        onSuccess: () => {
+          console.log("Product updated");
+          resetFields();
+          router.back();
+        },
+        onError: (error) => {
+          console.error("Error updating product:", error);
+          setErrors([error.message]);
+        },
+      }
+    );
   };
 
   const onCreate = () => {
@@ -59,12 +99,40 @@ const CreateProductScreen = () => {
       console.log("Validation errors:", errors);
       return;
     }
-    console.log("Product created", name, price);
+
+    insertProduct(
+      {
+        name,
+        price: parseFloat(price),
+        image,
+      },
+      {
+        onSuccess: () => {
+          console.log("Product created");
+          resetFields();
+          router.back();
+        },
+        onError: (error) => {
+          console.error("Error creating product:", error);
+          setErrors([error.message]);
+        },
+      }
+    );
+
     resetFields();
   };
 
   const onDelete = () => {
-    console.log("Product deleted");
+    deleteProduct(id, {
+      onSuccess: () => {
+        console.log("Product deleted");
+        router.replace("/(admin)");
+      },
+      onError: (error) => {
+        console.error("Error deleting product:", error);
+        setErrors([error.message]);
+      },
+    });
     resetFields();
   };
 
