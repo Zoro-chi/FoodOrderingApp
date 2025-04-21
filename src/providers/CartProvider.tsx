@@ -1,12 +1,12 @@
 import { createContext, PropsWithChildren, useContext, useState } from "react";
 import { randomUUID } from "expo-crypto";
 
-import { CartItem, Product } from "@/types";
+import { CartItem, Tables } from "@/types";
 
 type CartType = {
   items: CartItem[];
-  onAddItem: (product: Product, size: CartItem["size"]) => void;
-  onRemoveItem: (product: Product, size: CartItem["size"]) => void;
+  onAddItem: (product: Tables<"products">, size: CartItem["size"]) => void;
+  onRemoveItem: (product: Tables<"products">, size: CartItem["size"]) => void;
   updateQuantity: (id: string, quantity: -1 | 1) => void;
   totalPrice?: number;
   totalItems?: number;
@@ -24,7 +24,7 @@ export const CartContext = createContext<CartType>({
 const CartProvider = ({ children }: PropsWithChildren) => {
   const [items, setItems] = useState<CartItem[]>([]);
 
-  const onAddItem = (product: Product, size: CartItem["size"]) => {
+  const onAddItem = (product: Tables<"products">, size: CartItem["size"]) => {
     const existingItem = items.find(
       (item) => item.product.id === product.id && item.size === size
     );
@@ -45,7 +45,10 @@ const CartProvider = ({ children }: PropsWithChildren) => {
     console.log("Items in cart", items);
   };
 
-  const onRemoveItem = (product: Product, size: CartItem["size"]) => {
+  const onRemoveItem = (
+    product: Tables<"products">,
+    size: CartItem["size"]
+  ) => {
     setItems((prev) =>
       prev.filter(
         (item) => item.product.id !== product.id || item.size !== size

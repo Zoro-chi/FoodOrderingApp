@@ -3,10 +3,10 @@ import { Link, useSegments } from "expo-router";
 
 import EditScreenInfo from "@components/EditScreenInfo";
 import Colors from "@constants/Colors";
-import { Product } from "../types";
+import { Tables } from "../types";
 
 type ProductListItemProps = {
-  product: Product;
+  product: Tables<"products">;
 };
 
 export const defaultPizzaImage =

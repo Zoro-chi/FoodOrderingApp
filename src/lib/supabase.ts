@@ -1,7 +1,9 @@
 import "react-native-url-polyfill/auto";
 import * as SecureStore from "expo-secure-store";
-import { createClient } from "@supabase/supabase-js";
 import Constants from "expo-constants";
+
+import { createClient } from "@supabase/supabase-js";
+import { Database } from "@/database.types";
 
 const { SUPABASE_URL, SUPABASE_ANON_KEY } = Constants.expoConfig?.extra ?? {};
 
@@ -20,7 +22,7 @@ const ExpoSecureStoreAdapter = {
 const supabaseUrl = SUPABASE_URL;
 const supabaseAnonKey = SUPABASE_ANON_KEY;
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
     storage: ExpoSecureStoreAdapter as any,
     autoRefreshToken: true,
