@@ -1,17 +1,52 @@
-import { View, Text, FlatList, Pressable } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  Pressable,
+  ActivityIndicator,
+} from "react-native";
 import { Stack, useLocalSearchParams } from "expo-router";
 
-import orders from "@assets/data/orders";
 import OrderListItem from "@/components/OrderListItem";
 import OrderItemListItem from "@/components/OrderItemListitem";
 import { OrderStatusList } from "@/types";
 import Colors from "@/constants/Colors";
+import { useOrderDetails, useUpdateOrder } from "@/api/orders";
 
 const OrderDetailsScreen = () => {
-  const { id } = useLocalSearchParams();
-  const order = orders.find((order) => order.id === Number(id));
-  if (!order) {
-    return <Text>Order not found</Text>;
+  const { id: idParam } = useLocalSearchParams();
+
+  // Improved parsing to handle undefined or invalid values
+  const id = idParam
+    ? typeof idParam === "string"
+      ? parseInt(idParam, 10)
+      : parseInt(idParam[0], 10)
+    : 0;
+
+  const { product: order, isLoading, error } = useOrderDetails(id);
+  const { updateOrder } = useUpdateOrder();
+
+  const updateStatus = async (status: string) => {
+    try {
+      await updateOrder({
+        id: id,
+        updatedFields: { status },
+      });
+    } catch (error) {
+      console.error("Failed to update order status:", error);
+    }
+  };
+
+  if (isLoading) {
+    return <ActivityIndicator />;
+  }
+
+  if (error || !order) {
+    return (
+      <Text style={{ color: "red" }}>
+        {error ? error.message : "Failed to load order details"}
+      </Text>
+    );
   }
 
   return (
@@ -41,7 +76,7 @@ const OrderDetailsScreen = () => {
               {OrderStatusList.map((status) => (
                 <Pressable
                   key={status}
-                  onPress={() => console.warn("Update status")}
+                  onPress={() => updateStatus(status)}
                   style={{
                     borderColor: Colors.light.tint,
                     borderWidth: 1,

@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { StyleSheet, Text, View, TextInput, Image, Alert } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  Image,
+  Alert,
+  useColorScheme,
+} from "react-native";
 import * as ImagePicker from "expo-image-picker";
 
 import Button from "@/components/Button";
@@ -14,14 +22,25 @@ import {
 } from "@/api/products";
 
 const CreateProductScreen = () => {
+  const colorScheme = useColorScheme() || "light";
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [errors, setErrors] = useState<string[]>([]);
   const [image, setImage] = useState<string | null>(null);
   const router = useRouter();
 
+  // Get theme colors
+  const backgroundColor = Colors[colorScheme].background;
+  const textColor = Colors[colorScheme].text;
+  const tintColor = Colors[colorScheme].tint;
+
   const { id: idString } = useLocalSearchParams();
-  const id = parseFloat(typeof idString === "string" ? idString : idString[0]);
+  // Improved parsing to handle undefined or invalid values
+  const id = idString
+    ? typeof idString === "string"
+      ? parseInt(idString, 10)
+      : parseInt(idString[0], 10)
+    : 0;
 
   const isUpdating = !!id;
 
@@ -165,7 +184,7 @@ const CreateProductScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor }]}>
       <Stack.Screen
         options={{ title: isUpdating ? "Update Product" : "Create Product" }}
       />
@@ -174,32 +193,61 @@ const CreateProductScreen = () => {
         source={{ uri: image || defaultPizzaImage }}
         style={styles.image}
       />
-      <Text style={styles.textButton} onPress={pickImage}>
+      <Text
+        style={[styles.textButton, { color: tintColor }]}
+        onPress={pickImage}
+      >
         Select Image
       </Text>
 
-      <Text style={styles.label}>Name</Text>
+      <Text
+        style={[
+          styles.label,
+          { color: colorScheme === "dark" ? "#ccc" : "grey" },
+        ]}
+      >
+        Name
+      </Text>
       <TextInput
         value={name}
         onChangeText={setName}
         autoCapitalize="words"
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            color: textColor,
+            backgroundColor: colorScheme === "dark" ? "#333" : "gainsboro",
+          },
+        ]}
         placeholder="Enter product name"
-        placeholderTextColor="#aaa"
+        placeholderTextColor={colorScheme === "dark" ? "#aaa" : "#777"}
       />
 
-      <Text style={styles.label}>Price ($)</Text>
+      <Text
+        style={[
+          styles.label,
+          { color: colorScheme === "dark" ? "#ccc" : "grey" },
+        ]}
+      >
+        Price ($)
+      </Text>
       <TextInput
         value={price}
         onChangeText={setPrice}
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            color: textColor,
+            backgroundColor: colorScheme === "dark" ? "#333" : "gainsboro",
+          },
+        ]}
         placeholder="9.99"
-        placeholderTextColor="#aaa"
+        placeholderTextColor={colorScheme === "dark" ? "#aaa" : "#777"}
         keyboardType="numeric"
       />
 
       {errors.length > 0 && (
-        <View>
+        <View style={{ backgroundColor: "transparent" }}>
           {errors.map((error, index) => (
             <Text key={index} style={{ color: "red" }}>
               {error}
@@ -210,7 +258,10 @@ const CreateProductScreen = () => {
 
       <Button text={isUpdating ? "Update" : "Create"} onPress={onSubmit} />
       {isUpdating && (
-        <Text onPress={confirmDelete} style={styles.textButton}>
+        <Text
+          onPress={confirmDelete}
+          style={[styles.textButton, { color: "red" }]}
+        >
           Delete
         </Text>
       )}
@@ -225,16 +276,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     padding: 10,
-    color: "#fff",
   },
   label: {
     fontSize: 17,
     fontWeight: "bold",
-    color: "grey",
     marginBottom: 5,
   },
   input: {
-    backgroundColor: "gainsboro",
     padding: 10,
     borderRadius: 5,
     marginTop: 5,
@@ -248,7 +296,6 @@ const styles = StyleSheet.create({
   textButton: {
     alignSelf: "center",
     fontWeight: "bold",
-    color: Colors.dark.tint,
     marginVertical: 10,
   },
 });

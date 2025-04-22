@@ -2,6 +2,9 @@ import { createContext, PropsWithChildren, useContext, useState } from "react";
 import { randomUUID } from "expo-crypto";
 
 import { CartItem, Tables } from "@/types";
+import { useInsertOrder } from "@/api/orders";
+import { useRouter } from "expo-router";
+import { useInsertOrderItems } from "@/api/order-items";
 
 type CartType = {
   items: CartItem[];
@@ -10,6 +13,7 @@ type CartType = {
   updateQuantity: (id: string, quantity: -1 | 1) => void;
   totalPrice?: number;
   totalItems?: number;
+  checkout?: () => void;
 };
 
 export const CartContext = createContext<CartType>({
@@ -19,10 +23,15 @@ export const CartContext = createContext<CartType>({
   updateQuantity: () => {},
   totalPrice: 0,
   totalItems: 0,
+  checkout: () => {},
 });
 
 const CartProvider = ({ children }: PropsWithChildren) => {
   const [items, setItems] = useState<CartItem[]>([]);
+  const router = useRouter();
+
+  const { insertOrder } = useInsertOrder();
+  const { insertOrderItems } = useInsertOrderItems();
 
   const onAddItem = (product: Tables<"products">, size: CartItem["size"]) => {
     const existingItem = items.find(
@@ -77,6 +86,36 @@ const CartProvider = ({ children }: PropsWithChildren) => {
 
   const totalItems = items.reduce((total, item) => total + item.quantity, 0);
 
+  const checkout = () => {
+    console.log("Checkout");
+    insertOrder(
+      {
+        total: totalPrice,
+      },
+      {
+        onSuccess: saveorderItems,
+      }
+    );
+  };
+
+  const saveorderItems = (order: Tables<"orders">) => {
+    const orderItems = items.map((cartItem) => ({
+      order_id: order.id,
+      product_id: cartItem.product.id,
+      quantity: cartItem.quantity,
+      size: cartItem.size,
+    }));
+    console.log("Order items", orderItems);
+
+    insertOrderItems(orderItems, {
+      onSuccess: () => {
+        console.log("Order created", order);
+        setItems([]);
+        router.push(`/(user)/orders/${order.id}`);
+      },
+    });
+  };
+
   return (
     <CartContext.Provider
       value={{
@@ -86,6 +125,7 @@ const CartProvider = ({ children }: PropsWithChildren) => {
         updateQuantity,
         totalPrice,
         totalItems,
+        checkout,
       }}
     >
       {children}

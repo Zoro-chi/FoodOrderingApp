@@ -14,6 +14,7 @@ import { useColorScheme } from "@components/useColorScheme";
 import CartProvider from "@/providers/CartProvider";
 import AuthProvider from "@/providers/AuthProvider";
 import QueryProvider from "@/providers/QueryProvider";
+import Colors from "@/constants/Colors";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -53,18 +54,79 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
+  // Use your enhanced useColorScheme hook
   const colorScheme = useColorScheme();
+  // const colorScheme = "dark";
+
+  // Create custom theme objects that extend the default themes with your color constants
+  const customLightTheme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      background: Colors.light.background,
+      text: Colors.light.text,
+      card: Colors.light.cardBackground,
+      primary: Colors.light.tint,
+      border: Colors.light.border,
+    },
+  };
+
+  const customDarkTheme = {
+    ...DarkTheme,
+    colors: {
+      ...DarkTheme.colors,
+      background: Colors.dark.background,
+      text: Colors.dark.text,
+      card: Colors.dark.cardBackground,
+      primary: Colors.dark.tint,
+      border: Colors.dark.border,
+    },
+  };
 
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+    <ThemeProvider
+      value={colorScheme === "dark" ? customDarkTheme : customLightTheme}
+    >
       <AuthProvider>
         <QueryProvider>
           <CartProvider>
-            <Stack>
+            <Stack
+              screenOptions={{
+                headerStyle: {
+                  backgroundColor:
+                    colorScheme === "dark"
+                      ? Colors.dark.headerBackground
+                      : Colors.light.headerBackground,
+                },
+                headerTintColor:
+                  colorScheme === "dark" ? Colors.dark.text : Colors.light.text,
+                contentStyle: {
+                  backgroundColor:
+                    colorScheme === "dark"
+                      ? Colors.dark.background
+                      : Colors.light.background,
+                },
+              }}
+            >
               <Stack.Screen name="(user)" options={{ headerShown: false }} />
               <Stack.Screen name="(admin)" options={{ headerShown: false }} />
               <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-              <Stack.Screen name="cart" options={{ presentation: "modal" }} />
+              <Stack.Screen
+                name="cart"
+                options={{
+                  presentation: "modal",
+                  headerStyle: {
+                    backgroundColor:
+                      colorScheme === "dark"
+                        ? Colors.dark.headerBackground
+                        : Colors.light.headerBackground,
+                  },
+                  headerTintColor:
+                    colorScheme === "dark"
+                      ? Colors.dark.text
+                      : Colors.light.text,
+                }}
+              />
             </Stack>
           </CartProvider>
         </QueryProvider>

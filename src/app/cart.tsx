@@ -6,7 +6,7 @@ import CartListItem from "@/components/CartListItem";
 import Button from "@/components/Button";
 
 const CartScreen = () => {
-  const { items, totalPrice } = useCart();
+  const { items, totalPrice, checkout } = useCart();
 
   return (
     <View>
@@ -18,7 +18,7 @@ const CartScreen = () => {
 
       <Text style={styles.totalText}> Total: ${totalPrice} </Text>
       <View>
-        <Button text="Checkout" />
+        <Button onPress={checkout} text="Checkout" />
       </View>
 
       {/* Use a light status bar on iOS to account for the black space above the modal */}

@@ -1,7 +1,13 @@
-import { StyleSheet, Text, View, Image, Pressable } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  Pressable,
+  useColorScheme,
+} from "react-native";
 import { Link, useSegments } from "expo-router";
 
-import EditScreenInfo from "@components/EditScreenInfo";
 import Colors from "@constants/Colors";
 import { Tables } from "../types";
 
@@ -14,18 +20,28 @@ export const defaultPizzaImage =
 
 const ProductListItem = ({ product }: ProductListItemProps) => {
   const segments = useSegments();
+  const colorScheme = useColorScheme() || "dark";
+  const backgroundColor = Colors[colorScheme].cardBackground;
+  const textColor = Colors[colorScheme].text;
+  const tintColor = Colors[colorScheme].tint;
 
   return (
     <Link href={`./menu/${product.id}`} asChild>
-      <Pressable style={styles.container}>
+      <Pressable style={[styles.container, { backgroundColor }]}>
         <Image
           source={{ uri: product.image || defaultPizzaImage }}
-          style={styles.image}
+          style={[styles.image, { backgroundColor: tintColor }]}
           resizeMode="contain"
         />
 
-        <Text style={styles.title}> {product.name} </Text>
-        <Text style={styles.price}> ${product.price} </Text>
+        <Text style={[styles.title, { color: textColor }]}>
+          {" "}
+          {product.name}{" "}
+        </Text>
+        <Text style={[styles.price, { color: tintColor }]}>
+          {" "}
+          ${product.price}{" "}
+        </Text>
       </Pressable>
     </Link>
   );
@@ -35,7 +51,6 @@ export default ProductListItem;
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Colors.dark.background,
     padding: 10,
     borderRadius: 10,
     flex: 1,
@@ -44,19 +59,16 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#fff",
     marginVertical: 10,
   },
   price: {
     fontSize: 13,
-    color: Colors.dark.tint,
     fontWeight: "bold",
   },
   image: {
     width: "100%",
     aspectRatio: 1,
     marginVertical: 10,
-    backgroundColor: Colors.dark.tint,
     borderRadius: 10,
   },
 });

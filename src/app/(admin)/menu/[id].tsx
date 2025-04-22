@@ -7,6 +7,7 @@ import {
   Image,
   Pressable,
   ActivityIndicator,
+  useColorScheme,
 } from "react-native";
 import { useLocalSearchParams, Stack, useRouter, Link } from "expo-router";
 
@@ -17,14 +18,26 @@ import Colors from "@/constants/Colors";
 import { useProduct } from "@/api/products";
 
 const ProductDetailsScreen = () => {
-  const { id: idString } = useLocalSearchParams();
-  const id = parseFloat(typeof idString === "string" ? idString : idString[0]);
+  const { id: idParam } = useLocalSearchParams();
+  const colorScheme = useColorScheme() || "dark";
+
+  // Improved parsing to handle undefined or invalid values
+  const id = idParam
+    ? typeof idParam === "string"
+      ? parseInt(idParam, 10)
+      : parseInt(idParam[0], 10)
+    : 0;
+
   const { product, error, isLoading } = useProduct(id);
 
   const router = useRouter();
   const [selectedSize, setSelectedSize] = useState<PizzaSize>("M");
 
   const { onAddItem } = useCart();
+
+  const backgroundColor = Colors[colorScheme].background;
+  const textColor = Colors[colorScheme].text;
+  const tintColor = Colors[colorScheme].tint;
 
   const addToCart = () => {
     if (!product) {
@@ -37,15 +50,23 @@ const ProductDetailsScreen = () => {
   };
 
   if (isLoading) {
-    return <ActivityIndicator />;
+    return <ActivityIndicator color={tintColor} />;
   }
 
-  if (error) {
-    return <Text style={{ color: "red" }}>Error: {error.message}</Text>;
+  if (error || !id) {
+    return (
+      <Text style={{ color: "red" }}>
+        {error ? error.message : "Invalid product ID"}
+      </Text>
+    );
+  }
+
+  if (!product) {
+    return <Text style={{ color: "red" }}>Product not found</Text>;
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor }]}>
       <Stack.Screen
         options={{
           title: product.name,
@@ -56,7 +77,7 @@ const ProductDetailsScreen = () => {
                   <FontAwesome
                     name="pencil"
                     size={20}
-                    color={Colors.dark.tint}
+                    color={tintColor}
                     style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
                   />
                 )}
@@ -71,8 +92,11 @@ const ProductDetailsScreen = () => {
         style={styles.image}
       />
 
-      <Text style={styles.title}> {product.name} </Text>
-      <Text style={styles.price}> ${product.price} </Text>
+      <Text style={[styles.title, { color: textColor }]}> {product.name} </Text>
+      <Text style={[styles.price, { color: textColor }]}>
+        {" "}
+        ${product.price}{" "}
+      </Text>
     </View>
   );
 };
@@ -82,9 +106,7 @@ export default ProductDetailsScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    color: "#fff",
     padding: 10,
-    // alignItems: "center",
     justifyContent: "center",
   },
   image: {
@@ -92,12 +114,10 @@ const styles = StyleSheet.create({
     aspectRatio: 1,
   },
   price: {
-    color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
   },
   title: {
-    color: "#fff",
     fontSize: 22,
     fontWeight: "bold",
   },

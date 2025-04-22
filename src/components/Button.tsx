@@ -1,4 +1,10 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  useColorScheme,
+} from "react-native";
 import Colors from "../constants/Colors";
 import { forwardRef } from "react";
 
@@ -7,9 +13,21 @@ type ButtonProps = {
 } & React.ComponentPropsWithoutRef<typeof Pressable>;
 
 const Button = forwardRef<View | null, ButtonProps>(
-  ({ text, ...pressableProps }, ref) => {
+  ({ text, style, ...pressableProps }, ref) => {
+    const colorScheme = useColorScheme() || "dark";
+    const tintColor = Colors[colorScheme].tint;
+
     return (
-      <Pressable ref={ref} {...pressableProps} style={styles.container}>
+      <Pressable
+        ref={ref}
+        {...pressableProps}
+        style={({ pressed }) => ({
+          ...styles.container,
+          backgroundColor: tintColor,
+          opacity: pressed ? 0.9 : 1,
+          ...(style as object),
+        })}
+      >
         <Text style={styles.text}>{text}</Text>
       </Pressable>
     );
@@ -18,7 +36,6 @@ const Button = forwardRef<View | null, ButtonProps>(
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Colors.light.tint,
     padding: 15,
     alignItems: "center",
     borderRadius: 100,
