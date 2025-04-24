@@ -91,16 +91,3 @@ The app uses the following environment variables:
 
 - `SUPABASE_URL`: The URL of your Supabase instance.
 - `SUPABASE_ANON_KEY`: The anonymous key for your Supabase instance.
-
-## Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository.
-2. Create a new branch for your feature or bugfix.
-3. Commit your changes and push the branch.
-4. Open a pull request.
-
-## License
-
-This project is licensed under the MIT License.
