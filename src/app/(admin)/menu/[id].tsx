@@ -16,6 +16,7 @@ import { useCart } from "@/providers/CartProvider";
 import { PizzaSize } from "@/types";
 import Colors from "@/constants/Colors";
 import { useProduct } from "@/api/products";
+import RemoteImage from "@/components/RemoteImage";
 
 const ProductDetailsScreen = () => {
   const { id: idParam } = useLocalSearchParams();
@@ -87,8 +88,9 @@ const ProductDetailsScreen = () => {
         }}
       />
 
-      <Image
-        source={{ uri: product.image || defaultPizzaImage }}
+      <RemoteImage
+        path={product.image}
+        fallback={defaultPizzaImage}
         style={styles.image}
       />
 

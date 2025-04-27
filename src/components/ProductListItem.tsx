@@ -10,6 +10,7 @@ import { Link, useSegments } from "expo-router";
 
 import Colors from "@constants/Colors";
 import { Tables } from "../types";
+import RemoteImage from "./RemoteImage";
 
 type ProductListItemProps = {
   product: Tables<"products">;
@@ -28,8 +29,9 @@ const ProductListItem = ({ product }: ProductListItemProps) => {
   return (
     <Link href={`./menu/${product.id}`} asChild>
       <Pressable style={[styles.container, { backgroundColor }]}>
-        <Image
-          source={{ uri: product.image || defaultPizzaImage }}
+        <RemoteImage
+          path={product.image}
+          fallback={defaultPizzaImage}
           style={[styles.image, { backgroundColor: tintColor }]}
           resizeMode="contain"
         />

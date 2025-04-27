@@ -10,6 +10,9 @@ import {
   useColorScheme,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system";
+import { decode } from "base64-arraybuffer";
+import { randomUUID } from "expo-crypto";
 
 import Button from "@/components/Button";
 import { defaultPizzaImage } from "@/components/ProductListItem";
@@ -20,6 +23,7 @@ import {
   useProduct,
   useUpdateProduct,
 } from "@/api/products";
+import { supabase } from "@/lib/supabase";
 
 const CreateProductScreen = () => {
   const colorScheme = useColorScheme() || "light";
@@ -113,17 +117,19 @@ const CreateProductScreen = () => {
     );
   };
 
-  const onCreate = () => {
+  const onCreate = async () => {
     if (!validateInput()) {
       console.log("Validation errors:", errors);
       return;
     }
 
+    const imagePath = await uploadImage();
+
     insertProduct(
       {
         name,
         price: parseFloat(price),
-        image,
+        image: imagePath,
       },
       {
         onSuccess: () => {
@@ -180,6 +186,27 @@ const CreateProductScreen = () => {
 
     if (!result.canceled) {
       setImage(result.assets[0].uri);
+    }
+  };
+
+  const uploadImage = async () => {
+    if (!image?.startsWith("file://")) {
+      return;
+    }
+
+    const base64 = await FileSystem.readAsStringAsync(image, {
+      encoding: "base64",
+    });
+    const filePath = `${randomUUID()}.png`;
+    const contentType = "image/png";
+    const { data, error } = await supabase.storage
+      .from("product-images")
+      .upload(filePath, decode(base64), { contentType });
+
+    console.log("Upload result:", data, error);
+
+    if (data) {
+      return data.path;
     }
   };
 
