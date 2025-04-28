@@ -7,7 +7,7 @@ import {
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import "react-native-reanimated";
 
 import { useColorScheme } from "@components/useColorScheme";
@@ -56,37 +56,46 @@ export default function RootLayout() {
 function RootLayoutNav() {
   // Use your enhanced useColorScheme hook
   const colorScheme = useColorScheme();
-  // const colorScheme = "dark";
 
-  // Create custom theme objects that extend the default themes with your color constants
-  const customLightTheme = {
-    ...DefaultTheme,
-    colors: {
-      ...DefaultTheme.colors,
-      background: Colors.light.background,
-      text: Colors.light.text,
-      card: Colors.light.cardBackground,
-      primary: Colors.light.tint,
-      border: Colors.light.border,
-    },
-  };
+  // Memoize theme objects to prevent unnecessary re-renders
+  const customLightTheme = useMemo(
+    () => ({
+      ...DefaultTheme,
+      colors: {
+        ...DefaultTheme.colors,
+        background: Colors.light.background,
+        text: Colors.light.text,
+        card: Colors.light.cardBackground,
+        primary: Colors.light.tint,
+        border: Colors.light.border,
+      },
+    }),
+    []
+  );
 
-  const customDarkTheme = {
-    ...DarkTheme,
-    colors: {
-      ...DarkTheme.colors,
-      background: Colors.dark.background,
-      text: Colors.dark.text,
-      card: Colors.dark.cardBackground,
-      primary: Colors.dark.tint,
-      border: Colors.dark.border,
-    },
-  };
+  const customDarkTheme = useMemo(
+    () => ({
+      ...DarkTheme,
+      colors: {
+        ...DarkTheme.colors,
+        background: Colors.dark.background,
+        text: Colors.dark.text,
+        card: Colors.dark.cardBackground,
+        primary: Colors.dark.tint,
+        border: Colors.dark.border,
+      },
+    }),
+    []
+  );
+
+  // Memoize the current theme based on colorScheme
+  const currentTheme = useMemo(
+    () => (colorScheme === "dark" ? customDarkTheme : customLightTheme),
+    [colorScheme, customDarkTheme, customLightTheme]
+  );
 
   return (
-    <ThemeProvider
-      value={colorScheme === "dark" ? customDarkTheme : customLightTheme}
-    >
+    <ThemeProvider value={currentTheme}>
       <AuthProvider>
         <QueryProvider>
           <CartProvider>

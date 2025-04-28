@@ -90,18 +90,20 @@ const CreateProductScreen = () => {
     }
   };
 
-  const onUpdate = () => {
+  const onUpdate = async () => {
     if (!validateInput()) {
       console.log("Validation errors:", errors);
       return;
     }
+
+    const imagePath = await uploadImage();
 
     updateProduct(
       {
         id,
         name,
         price: parseFloat(price),
-        image,
+        image: imagePath,
       },
       {
         onSuccess: () => {
