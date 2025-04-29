@@ -5,8 +5,9 @@ import {
   View,
   useColorScheme,
 } from "react-native";
-import Colors from "../constants/Colors";
+import Colors from "../constants/Colors.ts";
 import { forwardRef } from "react";
+import React from "react";
 
 type ButtonProps = {
   text: string;

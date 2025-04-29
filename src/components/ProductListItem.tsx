@@ -1,16 +1,10 @@
-import {
-  StyleSheet,
-  Text,
-  View,
-  Image,
-  Pressable,
-  useColorScheme,
-} from "react-native";
+import { StyleSheet, Text, Pressable, useColorScheme } from "react-native";
 import { Link, useSegments } from "expo-router";
 
-import Colors from "@constants/Colors";
-import { Tables } from "../types";
-import RemoteImage from "./RemoteImage";
+import Colors from "../constants/Colors.ts";
+import { Tables } from "../types.ts";
+import RemoteImage from "./RemoteImage.tsx";
+import React from "react";
 
 type ProductListItemProps = {
   product: Tables<"products">;

@@ -8,13 +8,14 @@ import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useMemo } from "react";
+import { StripeProvider } from "@stripe/stripe-react-native";
 import "react-native-reanimated";
 
-import { useColorScheme } from "@components/useColorScheme";
-import CartProvider from "@/providers/CartProvider";
-import AuthProvider from "@/providers/AuthProvider";
-import QueryProvider from "@/providers/QueryProvider";
-import Colors from "@/constants/Colors";
+import { useColorScheme } from "../components/useColorScheme";
+import CartProvider from "../providers/CartProvider";
+import AuthProvider from "../providers/AuthProvider";
+import QueryProvider from "../providers/QueryProvider";
+import Colors from "../constants/Colors";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -96,34 +97,14 @@ function RootLayoutNav() {
 
   return (
     <ThemeProvider value={currentTheme}>
-      <AuthProvider>
-        <QueryProvider>
-          <CartProvider>
-            <Stack
-              screenOptions={{
-                headerStyle: {
-                  backgroundColor:
-                    colorScheme === "dark"
-                      ? Colors.dark.headerBackground
-                      : Colors.light.headerBackground,
-                },
-                headerTintColor:
-                  colorScheme === "dark" ? Colors.dark.text : Colors.light.text,
-                contentStyle: {
-                  backgroundColor:
-                    colorScheme === "dark"
-                      ? Colors.dark.background
-                      : Colors.light.background,
-                },
-              }}
-            >
-              <Stack.Screen name="(user)" options={{ headerShown: false }} />
-              <Stack.Screen name="(admin)" options={{ headerShown: false }} />
-              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-              <Stack.Screen
-                name="cart"
-                options={{
-                  presentation: "modal",
+      <StripeProvider
+        publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || ""}
+      >
+        <AuthProvider>
+          <QueryProvider>
+            <CartProvider>
+              <Stack
+                screenOptions={{
                   headerStyle: {
                     backgroundColor:
                       colorScheme === "dark"
@@ -134,12 +115,38 @@ function RootLayoutNav() {
                     colorScheme === "dark"
                       ? Colors.dark.text
                       : Colors.light.text,
+                  contentStyle: {
+                    backgroundColor:
+                      colorScheme === "dark"
+                        ? Colors.dark.background
+                        : Colors.light.background,
+                  },
                 }}
-              />
-            </Stack>
-          </CartProvider>
-        </QueryProvider>
-      </AuthProvider>
+              >
+                <Stack.Screen name="(user)" options={{ headerShown: false }} />
+                <Stack.Screen name="(admin)" options={{ headerShown: false }} />
+                <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+                <Stack.Screen
+                  name="cart"
+                  options={{
+                    presentation: "modal",
+                    headerStyle: {
+                      backgroundColor:
+                        colorScheme === "dark"
+                          ? Colors.dark.headerBackground
+                          : Colors.light.headerBackground,
+                    },
+                    headerTintColor:
+                      colorScheme === "dark"
+                        ? Colors.dark.text
+                        : Colors.light.text,
+                  }}
+                />
+              </Stack>
+            </CartProvider>
+          </QueryProvider>
+        </AuthProvider>
+      </StripeProvider>
     </ThemeProvider>
   );
 }

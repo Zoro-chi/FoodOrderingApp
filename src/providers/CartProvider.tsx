@@ -1,10 +1,16 @@
-import { createContext, PropsWithChildren, useContext, useState } from "react";
+import React, {
+  createContext,
+  PropsWithChildren,
+  useContext,
+  useState,
+} from "react";
 import { randomUUID } from "expo-crypto";
 
-import { CartItem, Tables } from "@/types";
-import { useInsertOrder } from "@/api/orders";
+import { CartItem, Tables } from "../types";
+import { useInsertOrder } from "../api/orders/index";
 import { useRouter } from "expo-router";
-import { useInsertOrderItems } from "@/api/order-items";
+import { useInsertOrderItems } from "../api/order-items/index";
+import { initializePaymentSheet, openPaymentSheet } from "@/lib/stripe";
 
 type CartType = {
   items: CartItem[];
@@ -86,8 +92,16 @@ const CartProvider = ({ children }: PropsWithChildren) => {
 
   const totalItems = items.reduce((total, item) => total + item.quantity, 0);
 
-  const checkout = () => {
+  const checkout = async () => {
     console.log("Checkout");
+
+    await initializePaymentSheet(Math.floor(totalPrice * 100));
+    const payed = await openPaymentSheet();
+
+    if (!payed) {
+      return;
+    }
+
     insertOrder(
       {
         total: totalPrice,

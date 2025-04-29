@@ -37,6 +37,8 @@ export default {
     extra: {
       SUPABASE_URL: process.env.SUPABASE_URL,
       SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
+      EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY:
+        process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY,
     },
   },
 };

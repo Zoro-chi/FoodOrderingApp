@@ -91,3 +91,8 @@ The app uses the following environment variables:
 
 - `SUPABASE_URL`: The URL of your Supabase instance.
 - `SUPABASE_ANON_KEY`: The anonymous key for your Supabase instance.
+
+**NOTE**: To run the Stripe Payment server: 
+```sh
+npx supabase functions serve --env-file .env payment-sheet
+```
