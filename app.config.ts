@@ -39,6 +39,9 @@ export default {
       SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
       EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY:
         process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+      eas: {
+        projectId: "6bc3158d-7785-407f-911e-eb57cbc723b3",
+      },
     },
   },
 };

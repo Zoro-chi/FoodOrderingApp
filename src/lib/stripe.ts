@@ -12,8 +12,15 @@ const fetchPaymentSheetParams = async (amount: number) => {
   console.log("Fetching payment sheet params with amount:", amount);
 
   try {
+    // Get the current session for authentication
+    const { data: sessionData } = await supabase.auth.getSession();
+
+    // Invoke the Edge Function with authentication - if available
     const { data, error } = await supabase.functions.invoke("payment-sheet", {
       body: { amount },
+      headers: sessionData?.session
+        ? { Authorization: `Bearer ${sessionData.session.access_token}` }
+        : undefined,
     });
 
     if (error) {
@@ -54,14 +61,15 @@ export const initializePaymentSheet = async (amount: number) => {
   isPaymentSheetInitialized = false;
 
   try {
-    const { paymentIntent, publishableKey } = await fetchPaymentSheetParams(
-      amount
-    );
+    const { paymentIntent, publishableKey, customer, ephemeralKey } =
+      await fetchPaymentSheetParams(amount);
 
     console.log("Initializing payment sheet with intent");
     const { error } = await initPaymentSheet({
       merchantDisplayName: "Foodies",
       paymentIntentClientSecret: paymentIntent,
+      customerId: customer,
+      customerEphemeralKeySecret: ephemeralKey,
       defaultBillingDetails: {
         name: "John Doe",
       },

@@ -9,13 +9,13 @@ import { createOrRetrieveProfile } from "../_utils/supabase.ts";
 
 console.log("Payment sheet function called");
 
-// Try multiple environment variable names to increase compatibility
+// Get environment variables for Stripe configuration
 const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY");
 const stripePublishableKey =
   Deno.env.get("STRIPE_PUBLISHABLE_KEY") ||
   Deno.env.get("EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY");
 
-// Print all environment variables for debugging (don't include this in production)
+// Print all environment variables for debugging
 console.log(
   "Available environment variables:",
   Object.keys(Deno.env.toObject())
@@ -26,14 +26,24 @@ if (!stripeSecretKey) {
 }
 
 if (!stripePublishableKey) {
-  console.error(
-    "Neither STRIPE_PUBLISHABLE_KEY nor EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY is set"
-  );
+  console.error("No publishable key found in environment variables");
 }
 
 Deno.serve(async (req: Request) => {
   try {
     console.log(`Request method: ${req.method}`);
+
+    // Check if CORS preflight request
+    if (req.method === "OPTIONS") {
+      return new Response(null, {
+        status: 204,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "POST, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        },
+      });
+    }
 
     if (req.method !== "POST") {
       return new Response(JSON.stringify({ error: "Method not allowed" }), {
@@ -62,7 +72,22 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    // Create or retrieve user profile
+    const user = await createOrRetrieveProfile(req);
+    if (user) {
+      console.log("User found:", user.id);
+      // You could associate the payment with the user here if needed
+    } else {
+      console.log("Processing payment without authenticated user");
+    }
+
     console.log(`Creating payment intent for amount: ${amount}`);
+
+    // Create an ephermeralKey so that the Stripe SDK can fetch the customer's stored payment methods.
+    const ephemeralKey = await stripe.ephemeralKeys.create(
+      { customer: user },
+      { apiVersion: "2020-08-27" }
+    );
 
     // Check if Stripe is properly initialized
     if (!stripeSecretKey) {
@@ -87,6 +112,7 @@ Deno.serve(async (req: Request) => {
       paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
         currency: "usd",
+        customer: user,
       });
       console.log("Payment intent created:", paymentIntent.id);
     } catch (stripeError: any) {
@@ -120,6 +146,8 @@ Deno.serve(async (req: Request) => {
     const res = {
       paymentIntent: paymentIntent.client_secret,
       publishableKey: stripePublishableKey,
+      customer: user,
+      ephemeralKey: ephemeralKey.secret,
     };
 
     console.log("Response payload:", {
@@ -129,7 +157,10 @@ Deno.serve(async (req: Request) => {
 
     return new Response(JSON.stringify(res), {
       status: 200,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      },
     });
   } catch (error: any) {
     console.error("Error creating payment intent:", error);
@@ -145,13 +176,3 @@ Deno.serve(async (req: Request) => {
     );
   }
 });
-
-//  To invoke locally:
-
-// 1. Run `supabase start` (see: https://supabase.com/docs/reference/cli/supabase-start)
-// 2. Make an HTTP request:
-
-// curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/payment-sheet' \
-//   --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0' \
-//   --header 'Content-Type: application/json' \
-//   --data '{"amount":1500}'
