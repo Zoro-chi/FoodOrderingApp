@@ -12,6 +12,7 @@ import OrderItemListItem from "@/components/OrderItemListitem";
 import { OrderStatusList } from "@/types";
 import Colors from "@/constants/Colors";
 import { useOrderDetails, useUpdateOrder } from "@/api/orders";
+import { notifyUserAboutOrderUpdate } from "@/lib/notifications";
 
 const OrderDetailsScreen = () => {
   const { id: idParam } = useLocalSearchParams();
@@ -32,6 +33,11 @@ const OrderDetailsScreen = () => {
         id: id,
         updatedFields: { status },
       });
+
+      console.log("Notify :", order?.user_id);
+      if (order) {
+        await notifyUserAboutOrderUpdate({ ...order, status });
+      }
     } catch (error) {
       console.error("Failed to update order status:", error);
     }
